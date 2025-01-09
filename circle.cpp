@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <chrono>
 #include <cstdio>
+#ifdef _MSC_VER
+#define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 
 template <typename Generator>
@@ -44,8 +47,23 @@ inline std::pair<float, float> randomAzimuth(K::RandomGenerator& rng) {
     return std::make_pair((x2 - y2)*ri, 2*x*y*ri);
 }
 
+inline std::pair<float, float> randomAzimuthTrig(K::RandomGenerator& rng) {
+    float phi = 2*M_PI*rng.uniformF32();
+    return std::make_pair(cos(phi), sin(phi));
+}
+
 struct Direct1 {
     Direct1(K::RandomGenerator& rng) : rng(rng) {}
+    inline std::pair<float, float> generate() {
+        float r = sqrt(rng.uniformF32());
+        auto [cphi, sphi] = randomAzimuthTrig(rng);
+        return std::make_pair(r*cphi, r*sphi);
+    }
+    K::RandomGenerator& rng;
+};
+
+struct Direct2 {
+    Direct2(K::RandomGenerator& rng) : rng(rng) {}
     inline std::pair<float, float> generate() {
         float r = sqrt(rng.uniformF32());
         auto [cphi, sphi] = randomAzimuth(rng);
@@ -54,8 +72,8 @@ struct Direct1 {
     K::RandomGenerator& rng;
 };
 
-struct Direct2 {
-    Direct2(K::RandomGenerator& rng) : rng(rng) {}
+struct Direct3 {
+    Direct3(K::RandomGenerator& rng) : rng(rng) {}
     inline std::pair<float, float> generate() {
         float r = std::max(rng.uniformF32(), rng.uniformF32());
         auto [cphi, sphi] = randomAzimuth(rng);
@@ -77,6 +95,9 @@ int main(int argc, char **argv) {
 
     Direct2 direct2(*rng);
     checkPerformance("Direct2", direct2, nPoint);
+
+    Direct3 direct3(*rng);
+    checkPerformance("Direct3", direct3, nPoint);
 
     return 0;
 }
