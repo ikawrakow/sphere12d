@@ -4,14 +4,15 @@
 #include <chrono>
 #include <cstdio>
 #include <cmath>
+#include <tuple>
 
 template <typename Generator>
 void checkPerformance(const char* msg, Generator& g, int nPoint) {
     auto t1 = std::chrono::steady_clock::now();
     double average_r2 = 0;
     for (int j = 0; j < nPoint; ++j) {
-        auto [x, y] = g.generate();
-        float r2 = x*x + y*y;
+        auto [x, y, z] = g.generate();
+        float r2 = x*x + y*y + z*z;
         average_r2 += r2;
     }
     auto t2 = std::chrono::steady_clock::now();
@@ -22,13 +23,14 @@ void checkPerformance(const char* msg, Generator& g, int nPoint) {
 
 struct Rejection {
     Rejection(K::RandomGenerator& rng) : rng(rng) {}
-    inline std::pair<float, float> generate() {
-        float x, y;
+    inline std::tuple<float, float, float> generate() {
+        float x, y, z;
         do {
             x = 2*rng.uniformF32() - 1;
             y = 2*rng.uniformF32() - 1;
-        } while (x*x + y*y > 1);
-        return std::make_pair(x, y);
+            z = 2*rng.uniformF32() - 1;
+        } while (x*x + y*y + z*z > 1);
+        return std::make_tuple(x, y, z);
     }
     K::RandomGenerator& rng;
 };
@@ -46,20 +48,26 @@ inline std::pair<float, float> randomAzimuth(K::RandomGenerator& rng) {
 
 struct Direct1 {
     Direct1(K::RandomGenerator& rng) : rng(rng) {}
-    inline std::pair<float, float> generate() {
-        float r = sqrt(rng.uniformF32());
+    inline std::tuple<float, float, float> generate() {
+        float r = pow(rng.uniformF32(), 0.333333f);
+        float cost = 2*rng.uniformF32() - 1;
+        float sint = sqrt(std::max(0.f, 1 - cost*cost));
+        float rs = r*sint;
         auto [cphi, sphi] = randomAzimuth(rng);
-        return std::make_pair(r*cphi, r*sphi);
+        return std::make_tuple(rs*cphi, rs*sphi, r*cost);
     }
     K::RandomGenerator& rng;
 };
 
 struct Direct2 {
     Direct2(K::RandomGenerator& rng) : rng(rng) {}
-    inline std::pair<float, float> generate() {
-        float r = std::max(rng.uniformF32(), rng.uniformF32());
+    inline std::tuple<float, float, float> generate() {
+        float r = std::max(rng.uniformF32(), std::max(rng.uniformF32(), rng.uniformF32()));
+        float cost = 2*rng.uniformF32() - 1;
+        float sint = sqrt(std::max(0.f, 1 - cost*cost));
+        float rs = r*sint;
         auto [cphi, sphi] = randomAzimuth(rng);
-        return std::make_pair(r*cphi, r*sphi);
+        return std::make_tuple(rs*cphi, rs*sphi, r*cost);
     }
     K::RandomGenerator& rng;
 };
