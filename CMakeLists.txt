@@ -18,6 +18,6 @@ add_executable(circle circle.cpp randomGenerator.h randomGenerator.cpp)
 
 add_executable(sphere sphere.cpp randomGenerator.h randomGenerator.cpp)
 
-add_executable(simple simple.cpp randomGenerator.h randomGenerator.cpp)
+add_executable(simple12d simple12d.cpp randomGenerator.h randomGenerator.cpp)
 
-add_executable(smart smart.cpp randomGenerator.h randomGenerator.cpp)
+add_executable(smart12d smart12d.cpp randomGenerator.h randomGenerator.cpp)
