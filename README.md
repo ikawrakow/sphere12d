@@ -68,9 +68,15 @@ as expected from the Wikipedia article. The sampling algorithm is then as follow
 without the need for any rejections. This is implemented in `smart12d.cpp` and we get
 ```
 ./bin/smart12d
-t took 100000 attempts to sample 100000 points in a 12d sphere
+It took 100000 attempts to sample 100000 points in a 12d sphere
 Sampling efficiency: 1
 <r^2> = 0.85702
 Run time: 10.627 ms
 ```
 Nice. `5675 / 10.6 = 537` times faster than the simple method.
+
+I'm computing and reporting the average $r^2$ if the points inside the sphere to prevent the compiler from optimizing out the calls to the sampling function in the time measurement loop. But is `<r^2> = 0.85702` actually correct? As $r^2 = \sum r_i^2 = \sum y_i \equiv z_6$, we can compute $<r^2>$ analytically from
+
+$$< r^2 > = \pi^6/V_{s, 12} = \int_0^1 z_6 {\rm d}z_6 \int_{0}^{z_6} {\rm d}z_5 \int_{0}^{z_5} {\rm d}z_4 \cdots \int_{0}^{z_2} {\rm d}z_1 = 6/7 \approx 0.8571$$
+
+so yes, the result is correct (within statistical uncertainty).
