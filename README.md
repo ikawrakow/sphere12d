@@ -80,3 +80,57 @@ I'm computing and reporting the average $r^2$ if the points inside the sphere to
 $$< r^2 > = \pi^6/V_{s, 12} = \int_0^1 z_6 {\rm d}z_6 \int_{0}^{z_6} {\rm d}z_5 \int_{0}^{z_5} {\rm d}z_4 \cdots \int_{0}^{z_2} {\rm d}z_1 = 6/7 \approx 0.8571$$
 
 so yes, the result is correct (within statistical uncertainty).
+
+Obviously one can easily generalize the code here to sample random points in any $K$ dimensional sphere as long as $K$ is even. When $K$ is odd it becomes slightly more complicated because one has a spare coordinate where one cannot use polar coordinates. I leave the extension to odd $K$ for another day.
+
+## 4. Circles and 3D spheres
+
+We started by talking about picking random points inside a circle and using a rejection method. Obviously one can go to polar coordinates and have a rejection free method:
+1. Pick random $r$ in `[0...1]` using $r {\rm d}r$ as pdf. I.e., $r = \sqrt{\eta}$ where $\eta$ is a random number uniformly distributed in `[0...1]`.
+2. Pick a random angle in $\[0, 2 \pi\]$
+3. Deliver point $(r \cos \phi, r \sin \phi)$
+
+ But is this faster? `circle.cpp` has several methods for picking random points in a (unit) circle. We get
+ ```
+./bin/circle
+
+===================== Rejection(1000000 points)
+<r2> = 0.500039
+Time: 8.54295 ms
+
+===================== Direct1(1000000 points)
+<r2> = 0.499589
+Time: 27.7229 ms
+
+===================== Direct2(1000000 points)
+<r2> = 0.50024
+Time: 9.45063 ms
+
+===================== Direct3(1000000 points)
+<r2> = 0.499968
+Time: 10.5975 ms
+```
+
+Clearly no. Rejection is still fastest. `Direct1` is the above algorithm, so more than 3 times slower (despite hardware implementations for `sqrt` and `cos/sin`). `Direct2` uses a different method for obtaining $\cos \phi$ and $\sin \phi$ directly, without the need to evaluate trigonometric functions (see the `randomAzimuth()` function in `circle.cpp`). This is much faster than `Direct1`, but still slower than rejection. `Direct3` uses a trick to avoid the evaluation of `sqrt`: one picks 2 random numbers in `[0, 1]` and uses the larger of the two for $r$ in step 1 of the above algorithm (left as exercise to prove that this gives the correct pdf for $r$). In the old days `max(rndm(), rndm()` used to be faster than `sqrt(rndm())`, but the `sqrt` hardware implementation on the Ryzen is aparently fast enough to beat `max(rndm(), rndm())`.
+
+What about 3D?
+```
+./bin/sphere
+
+===================== Rejection(1000000 points)
+<r2> = 0.600087
+Time: 23.8875 ms
+
+===================== Direct1(1000000 points)
+<r2> = 0.600181
+Time: 20.7947 ms
+
+===================== Direct2(1000000 points)
+<r2> = 0.600106
+Time: 13.8537 ms
+```
+Here rejection becomes slower. The fastest method (o my CPU) is this:
+1. Set `r = max(rndm(), max(rndm(), rndm()))` (maximum of 3 random numbers uniformly distributed in `[0, 1]`. The resulting pdf for `r` is $r^2 {\rm d}r$
+2. Set `cost = 2*rndm()-1, sint = sqrt(1 - cost*cost)` (cosine and sine of the polar angle)
+3. Pick `cphi, sphi` using `randomAzimuth()`
+4. Deliver 3D point `(r*sint*cphi, r*sint*sphi, r*cost)`
