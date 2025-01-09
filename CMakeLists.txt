@@ -14,6 +14,8 @@ endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+add_executable(circle circle.cpp randomGenerator.h randomGenerator.cpp)
+
 add_executable(simple simple.cpp randomGenerator.h randomGenerator.cpp)
 
 add_executable(smart smart.cpp randomGenerator.h randomGenerator.cpp)
