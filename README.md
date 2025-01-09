@@ -111,7 +111,7 @@ Time: 9.45063 ms
 Time: 10.5975 ms
 ```
 
-Clearly no. Rejection is still fastest. `Direct1` is the above algorithm, so more than 3 times slower (despite hardware implementations for `sqrt` and `cos/sin`). `Direct2` uses a different method for obtaining $\cos \phi$ and $\sin \phi$ directly, without the need to evaluate trigonometric functions (see the `randomAzimuth()` function in `circle.cpp`). This is much faster than `Direct1`, but still slower than rejection. `Direct3` uses a trick to avoid the evaluation of `sqrt`: one picks 2 random numbers in `[0, 1]` and uses the larger of the two for $r$ in step 1 of the above algorithm (left as exercise to prove that this gives the correct pdf for $r$). In the old days `max(rndm(), rndm()` used to be faster than `sqrt(rndm())`, but the `sqrt` hardware implementation on the Ryzen is aparently fast enough to beat `max(rndm(), rndm())`.
+Clearly no. Rejection is still fastest. `Direct1` is the above algorithm, so more than 3 times slower (despite hardware implementations for `sqrt` and `cos/sin`). `Direct2` uses a different method for obtaining $\cos \phi$ and $\sin \phi$ directly, without the need to evaluate trigonometric functions (see the `randomAzimuth()` function in `circle.cpp`). This is much faster than `Direct1`, but still slower than rejection. `Direct3` uses a trick to avoid the evaluation of `sqrt`: one picks 2 random numbers in `[0, 1]` and uses the larger of the two for $r$ in step 1 of the above algorithm (left as exercise to prove that this gives the correct pdf for $r$). In the old days `max(rndm(), rndm()` used to be faster than `sqrt(rndm())`, but the `sqrt` hardware implementation on the Ryzen is apparently fast enough to beat `max(rndm(), rndm())`.
 
 What about 3D?
 ```
